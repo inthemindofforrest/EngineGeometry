@@ -1,0 +1,28 @@
+
+Idea for Assessment:
+
+World:
+	~Rainy
+	~Character
+	~Low Saturation
+
+
+Ground 
+	~Tiled
+	~Wet
+	~Displacement shader for steps
+	~Splash sound
+	~Small water particle
+
+Character
+	~Movement
+	~Run
+	~Jump
+
+Rain
+	~Splash on contact
+	~Ripple in puddle
+
+Lighting
+	~Flash, Add Brightness
+	~Add Saturation to world during flash
