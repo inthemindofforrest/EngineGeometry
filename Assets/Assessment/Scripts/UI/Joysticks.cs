@@ -4,14 +4,16 @@ using UnityEngine.UI;
 public class Joysticks : MonoBehaviour
 {
     public GameObject Heli;
-    public float HeliAltSpeed = 1;
-    public float HeliMovSpeed = 1;
+    public float HeliSpeed = 1;
 
     RectTransform StickTransform;
     bool SelectedCheck = false;
     bool MouseHeld = false;
 
-    public Vector3 Strength = Vector3.zero;
+    bool ElevationButtonHeld = false;
+    bool Raise = false;
+
+    Vector3 Strength = Vector3.zero;
     void Start()
     {
         StickTransform = GetComponent<RectTransform>();
@@ -22,6 +24,7 @@ public class Joysticks : MonoBehaviour
     void Update()
     {
         MoveJoystick();
+        ElevateHeli();
     }
 
     public void JoystickReset()
@@ -44,10 +47,8 @@ public class Joysticks : MonoBehaviour
     void ControlHeli(Vector3 _Strength)
     {
         //(All * -1 as the Heli is backwards)
-        Heli.transform.Translate(Strength.x * Heli.transform.forward * Time.deltaTime * -1);
-        Heli.transform.Translate(Strength.y * Heli.transform.up * Time.deltaTime * -1);
-        Heli.transform.Translate(Strength.z * Heli.transform.right * Time.deltaTime * -1);
-
+        _Strength = ((_Strength.x * Heli.transform.right) + (_Strength.y * Heli.transform.up) + (_Strength.z * Heli.transform.forward)).normalized * Time.deltaTime * -1;
+        Heli.transform.Translate(_Strength * HeliSpeed);
         float x = Heli.transform.position.x;
         float y = Heli.transform.position.y;
         float z = Heli.transform.position.z;
@@ -62,11 +63,11 @@ public class Joysticks : MonoBehaviour
             Vector2 OuttedPoint;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(StickTransform, Input.mousePosition, Camera.main, out OuttedPoint);
             OuttedPoint = Rect.NormalizedToPoint(StickTransform.rect, OuttedPoint);
+            
+            StickTransform.position = StickTransform.position + (Input.mousePosition - StickTransform.position)/* - new Vector3(OuttedPoint.x, OuttedPoint.y, 0)*/;
 
-            StickTransform.position = Input.mousePosition + new Vector3(OuttedPoint.x, OuttedPoint.y, 0);
-
-            Strength.x = Mathf.Clamp(StickTransform.localPosition.x, -1, 1);
-            Strength.z = Mathf.Clamp(StickTransform.localPosition.y, -1, 1);
+            Strength.x = Mathf.Clamp(StickTransform.localPosition.x/100, -1, 1);
+            Strength.z = Mathf.Clamp(StickTransform.localPosition.y/100, -1, 1);
             ControlHeli(Strength);
 
         }
@@ -74,6 +75,16 @@ public class Joysticks : MonoBehaviour
 
     public void RaiseLower(bool _Raise)
     {
-        ControlHeli(new Vector3(0, (_Raise) ? 1 : -1, 0));
+        ElevationButtonHeld = true;
+        Raise = _Raise;
+    }
+    public void ResetElevation()
+    {
+        ElevationButtonHeld = false;
+    }
+    public void ElevateHeli()
+    {
+        if(ElevationButtonHeld)
+            ControlHeli(new Vector3(0, (Raise) ? -1 : 1, 0));
     }
 }
