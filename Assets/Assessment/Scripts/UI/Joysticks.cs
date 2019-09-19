@@ -1,90 +1,83 @@
-﻿using UnityEngine;
-using UnityEngine.UI; 
+﻿/*
+ Joysticks - Main Steering for the Helicopter
+ Function - Takes in a function from the Helicopter and gives it a direction to move
+ */
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
+
+//Creating a Vector3 Event to accept a Vector3 as a parameter
+[System.Serializable]
+public class Vector3Event : UnityEvent<Vector3> { }
 
 public class Joysticks : MonoBehaviour
 {
-    public GameObject Heli;
-    public float HeliSpeed = 1;
+    public Vector3Event JoystickDirection;//The function that will be effected by the joystick
 
-    RectTransform StickTransform;
-    bool SelectedCheck = false;
-    bool MouseHeld = false;
+    #region RectTransforms
+    RectTransform HandleTransform;//The RectTransform of the Child Handle
+    RectTransform ParentTransform;//The RectTransform of the Parent of Handle
+    #endregion
 
-    bool ElevationButtonHeld = false;
-    bool Raise = false;
+    bool HandleGrabbed;//Whether the user is grabbing the Joystick
 
-    Vector3 Strength = Vector3.zero;
+    Vector3 Strength = Vector3.zero;//The Direction the joystick is currently facing
+
     void Start()
     {
-        StickTransform = GetComponent<RectTransform>();
-        StickTransform.localPosition = Vector3.zero;
+        //Parent needs to be First Child
+        ParentTransform = transform.GetChild(0).GetComponent<RectTransform>();
+        //Handle needs to be Parents First Child
+        HandleTransform = transform.GetChild(0).GetChild(0).GetComponent<RectTransform>();
+        HandleTransform.localPosition = Vector3.zero;
     }
-
     
     void Update()
     {
+        //Update the Joystick
+        JoystickUpdate();
+    }
+
+    void JoystickUpdate()
+    {
+        //Moves the joystick to correct position when grabbed
         MoveJoystick();
-        ElevateHeli();
+        //Set Parameter in the Vector3Event to Strength
+        JoystickDirection.Invoke(Strength);
     }
 
     public void JoystickReset()
     {
-        StickTransform.localPosition = Vector3.zero;
-        MouseHeld = false;
+        //Resets all the parameters for the Joystick
+        HandleGrabbed = false;
+        HandleTransform.localPosition = Vector3.zero;
+        Strength = Vector3.zero;
     }
 
-    public void JoystickSelected()
+    public void JoystickGrabbed(bool _Grab)
     {
-        if(SelectedCheck)
-            MouseHeld = true;
-    }
-
-    public void SetTrigger(bool _setter)
-    {
-        SelectedCheck = _setter;
-    }
-
-    void ControlHeli(Vector3 _Strength)
-    {
-        //(All * -1 as the Heli is backwards)
-        _Strength = ((_Strength.x * Heli.transform.right) + (_Strength.y * Heli.transform.up) + (_Strength.z * Heli.transform.forward)).normalized * Time.deltaTime * -1;
-        Heli.transform.Translate(_Strength * HeliSpeed);
-        float x = Heli.transform.position.x;
-        float y = Heli.transform.position.y;
-        float z = Heli.transform.position.z;
-        Heli.transform.position = new Vector3(Mathf.Clamp(x, -4, 4), Mathf.Clamp(y, 1.5f, 3.5f), Mathf.Clamp(z, -5, 4));
+        //Sets the grabbed state
+        HandleGrabbed = _Grab;
     }
 
     void MoveJoystick()
     {
-        if (MouseHeld)
+        //If Handle is being grabbed
+        if (HandleGrabbed)
         {
-            //Gets the point in which the mouse is in the Rect
-            Vector2 OuttedPoint;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(StickTransform, Input.mousePosition, Camera.main, out OuttedPoint);
-            OuttedPoint = Rect.NormalizedToPoint(StickTransform.rect, OuttedPoint);
-            
-            StickTransform.position = StickTransform.position + (Input.mousePosition - StickTransform.position)/* - new Vector3(OuttedPoint.x, OuttedPoint.y, 0)*/;
+            //Get offset distance of the Mouse and ParentTransform
+            Vector2 Distance = (Input.mousePosition - ParentTransform.position);
+            //Set the X and Y Offsets to snap to locations
+            float XOffset = (Distance.x < -50) ? -100 : (Distance.x > 50) ? 100 : 0;
+            float YOffset = (Distance.y < -50) ? -100 : (Distance.y > 50) ? 100 : 0;
 
-            Strength.x = Mathf.Clamp(StickTransform.localPosition.x/100, -1, 1);
-            Strength.z = Mathf.Clamp(StickTransform.localPosition.y/100, -1, 1);
-            ControlHeli(Strength);
+            //Set the transform of the Handle to the correct offsets
+            HandleTransform.localPosition = new Vector3(XOffset, YOffset, 0);
 
+            //Set the Strength
+            Strength.x = Mathf.Clamp(HandleTransform.localPosition.x/100, -1, 1);
+            Strength.z = Mathf.Clamp(HandleTransform.localPosition.y/100, -1, 1);
         }
     }
 
-    public void RaiseLower(bool _Raise)
-    {
-        ElevationButtonHeld = true;
-        Raise = _Raise;
-    }
-    public void ResetElevation()
-    {
-        ElevationButtonHeld = false;
-    }
-    public void ElevateHeli()
-    {
-        if(ElevationButtonHeld)
-            ControlHeli(new Vector3(0, (Raise) ? -1 : 1, 0));
-    }
 }

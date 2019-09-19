@@ -11,8 +11,8 @@ public class CreateShape : MonoBehaviour
 
     Mesh CustomMesh;
 
-    bool CanCreateQuad;
-    bool CanCreatePentagon;
+    bool CanCreateQuad = false;
+    bool CanCreatePentagon = false;
     public bool CanCreateCube;
     public bool CanCreateNGon;
 

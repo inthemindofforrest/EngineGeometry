@@ -10,17 +10,21 @@ public class Lightning : MonoBehaviour
     const float SecondStrikeDelay = 1.7f;//Seconds before the second lighting strike
 
     [Header("Visuals")]
-    public bool Edges = true;
-    public bool GrayScale = true;
-    public bool DepthOfField = true;
-    public bool Exposure = true;
+    public bool Edges = true;//Whether Vignette effect is applied
+    public bool GrayScale = true;//Whether ColorGrading Post Exposure effect is applied
+    public bool DepthOfField = true;//Whether DepthOfField effect is applied
+    public bool Exposure = true;//Whether ColorGrading Saturation effect is applied
 
-    public PostProcessVolume Volume;
-    Vignette Vig;
-    ColorGrading ColorG;
-    DepthOfField DOF;
+    [SerializeField]//Serialized in order for it to show in the inspector
+    PostProcessVolume Volume;//Volume for Post Processing
+    Vignette Vig;//Vignette for Post Proccessing
+    ColorGrading ColorG;//ColorGrading for Post Proccessing
+    DepthOfField DOF;//DepthOfField for Post Proccessing
 
-    MotionBlur Blur;
+    MotionBlur Blur;//MotionBlur for Post Proccessing
+
+    [Range(-100, 100)]//Clamp Inspector to the range
+    public int GrayscaleRange = 0;//Targeted reset for Grayscaling (-100 Gray, 0 Normal, 100 Super Saturated)
 
     void Start()
     {
@@ -28,8 +32,6 @@ public class Lightning : MonoBehaviour
         Vig = ScriptableObject.CreateInstance<Vignette>();
         Vig.enabled.Override(true);
         Vig.intensity.Override(.45f);
-        //Vig.opacity.Override(.1f);
-        //Vig.color.Override(new Color(0, 0, 0, .1f));
         #endregion
 
         #region ColorGrading Init
@@ -57,27 +59,31 @@ public class Lightning : MonoBehaviour
 
     void Update()
     {
+        //Update the strike function
         StrikeUpdate();
     }
 
     //Sets Saturtation Normal, then back to low
     //Sets Brightness High, then low, then back to normal
-    //
     void Strike()
     {
+        //Sets PPE (Post Proccessing Effects) sudenly to new value
         if (DepthOfField) DOF.focusDistance.value = 1f;
-        //if (Edges) Vig.intensity.value = .6f;
-        if (GrayScale) ColorG.saturation.value = 50;
+        if (Edges) Vig.intensity.value = .6f;
+        if (GrayScale) ColorG.saturation.value = 100;
         if (Exposure) ColorG.postExposure.value = 1.8f;
 
+        //PROBLEM: Can cause many strikes to happen one after another
+        //Still a cool effect which is why it is left in
         SecondStrike = false;
     }
 
     void ResetingStrike()
     {
+        //Lerp PPE back to its default values
         if (DepthOfField) DOF.focusDistance.value = Mathf.Lerp(DOF.focusDistance.value, 10f, .1f * Time.deltaTime);
         if (Edges) Vig.intensity.value = Mathf.Lerp(Vig.intensity.value, .5f, 1f * Time.deltaTime);
-        if (GrayScale) ColorG.saturation.value = Mathf.Lerp(ColorG.saturation.value, -100f, 1f * Time.deltaTime);
+        if (GrayScale) ColorG.saturation.value = Mathf.Lerp(ColorG.saturation.value, GrayscaleRange, 1f * Time.deltaTime);
         if (Exposure) ColorG.postExposure.value = Mathf.Lerp(ColorG.postExposure.value, -.5f, 1f * Time.deltaTime);
     }
 
@@ -86,7 +92,7 @@ public class Lightning : MonoBehaviour
         NextStrike -= Time.deltaTime;//Timer for the Strike
         if (NextStrike < 0)//If the next strike is suppose to happen
         {
-            NextStrike = Random.Range(5, 10);//Resets the next strike timer
+            NextStrike = Random.Range(10, 25);//Resets the next strike timer
             Strike();//Begin strike
             if (!SecondStrike)//If the lightin has only striked once
             {
