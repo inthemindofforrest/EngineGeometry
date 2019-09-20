@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Assessment/Assessment.unity
+    guid: 7e434500b49f2a7428af85efe917c68d
   m_configObjects: {}
