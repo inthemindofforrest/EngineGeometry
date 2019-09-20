@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class SharkFlee : MonoBehaviour
 {
+    public GameObject SecondaryCamera;
+
     [Header("Locations")]
     public GameObject ShipWreck;//Shipwreck GameObject
     public GameObject Boat;//Stranded Person GameObject
@@ -24,7 +26,7 @@ public class SharkFlee : MonoBehaviour
     {
         SController = GetComponent<SharkController>();
         Anim = GetComponentInChildren<Animator>();
-        CurrentLocation = Boat;    
+        CurrentLocation = Boat;
     }
 
     void Update()
@@ -67,6 +69,10 @@ public class SharkFlee : MonoBehaviour
             transform.position = transform.position + (TempTarget * SwimSpeed * Time.deltaTime);
             //Blend between the two animations
             Anim.SetFloat("SwimBlend", Anim.GetFloat("SwimBlend"), 1, 0.1f);
+            if(SecondaryCamera != null)
+            {
+                SecondaryCamera.transform.LookAt(gameObject.transform.position);
+            }
         }
         else
         {
@@ -74,6 +80,10 @@ public class SharkFlee : MonoBehaviour
             SController.enabled = true;
             //Blend between animations
             Anim.SetFloat("SwimBlend", Anim.GetFloat("SwimBlend"), 0, 0.1f);
+            if(SecondaryCamera != null)
+            {
+                SecondaryCamera.transform.LookAt(Boat.transform.position);
+            }
         }
         //Update the Radius depending on the two locations
         SController.Radius = (CurrentLocation == Boat) ? 2.5f : 5;
