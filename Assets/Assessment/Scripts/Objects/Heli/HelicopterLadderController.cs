@@ -5,8 +5,7 @@ using UnityEngine;
 public class HelicopterLadderController : MonoBehaviour
 {
     Animator LadderAnimator;//Animator for Ladder
-    [SerializeField]//Want to see in Inspector
-    float CurrentFrame = 0;//Current Animation frame 
+    public float CurrentFrame = 0;//Current Animation frame 
 
     private void Start()
     {

@@ -43,7 +43,7 @@ public class Joysticks : MonoBehaviour
         //Moves the joystick to correct position when grabbed
         MoveJoystick();
         //Set Parameter in the Vector3Event to Strength
-        JoystickDirection.Invoke(Strength);
+        if(HandleGrabbed)JoystickDirection.Invoke(Strength);
     }
 
     public void JoystickReset()

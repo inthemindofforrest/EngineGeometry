@@ -48,7 +48,7 @@ public class SliderThrottle : MonoBehaviour
         //Ajusts the Value according to the Throttle
         AjustValue();
         //Set Parameter in the FloatEvent to Value
-        SetToValue.Invoke(Value);
+        if(HandleGrabbed)SetToValue.Invoke(Value);
         //Checks if the throttle needs to be reset
         ThrottleReset();
         //Clamp the Slider between -1/0 to 1

@@ -106,4 +106,16 @@ public class Lightning : MonoBehaviour
         }
         ResetingStrike();//Resets the strike to its normal values
     }
+
+    public void InsaneStrike()
+    {
+        //Sets PPE (Post Proccessing Effects) sudenly to new value
+        if (DepthOfField) DOF.focusDistance.value = 10f;
+        if (Edges) Vig.intensity.value = .7f;
+        if (GrayScale) ColorG.saturation.value = 100;
+        if (Exposure) ColorG.postExposure.value = 7f;
+
+        //Do not want a second strike after this one
+        SecondStrike = true;
+    }
 }
